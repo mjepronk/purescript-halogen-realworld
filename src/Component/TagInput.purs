@@ -35,24 +35,26 @@ derive instance newtypeTag :: Newtype Tag _
 derive instance eqTag :: Eq Tag
 derive instance ordTag :: Ord Tag
 
-data Message 
-  = TagAdded Tag (Set Tag) 
-  | TagRemoved Tag (Set Tag) 
+data Message
+  = TagAdded Tag (Set Tag)
+  | TagRemoved Tag (Set Tag)
 
-component :: forall m. MonadEffect m => H.Component HH.HTML (Const Void) Unit Message m
+type Input = Set Tag
+
+component :: forall m. MonadEffect m => H.Component HH.HTML (Const Void) Input Message m
 component = H.mkComponent
-  { initialState: \_ -> { tags: Set.empty, text: "" }
+  { initialState: \tags -> { tags: tags, text: "" }
   , render
   , eval: H.mkEval $ H.defaultEval { handleAction = handleAction }
   }
   where
   handleAction :: Action -> H.HalogenM State Action () Message m Unit
-  handleAction = case _ of 
+  handleAction = case _ of
     HandleInput str ->
       H.modify_ _ { text = str }
 
     HandleKey ev -> case code ev of
-      "Enter" -> do 
+      "Enter" -> do
         H.liftEffect $ preventDefault (toEvent ev)
         st <- H.get
         when (st.text /= "") do
@@ -68,9 +70,9 @@ component = H.mkComponent
   render { text, tags } =
     HH.fieldset
       [ css "form-group" ]
-      [ HH.input 
+      [ HH.input
           [ css "form-control"
-          , HP.type_ HP.InputText 
+          , HP.type_ HP.InputText
           , HP.placeholder "Enter tags"
           , HP.value text
           , HE.onValueInput $ Just <<< HandleInput
@@ -85,7 +87,7 @@ component = H.mkComponent
       HH.span
         [ css "tag-default tag-pill" ]
         [ HH.i
-          [ css "ion-close-round" 
+          [ css "ion-close-round"
           , HE.onClick \_ -> Just $ RemoveTag tag
           ]
           [ ]

@@ -180,7 +180,8 @@ formComponent mbArticle = F.component formInput $ F.defaultSpec
         [ title
         , description
         , body
-        , HH.slot (SProxy :: _ "tagInput") unit TagInput.component unit handler
+        , HH.slot (SProxy :: _ "tagInput") unit TagInput.component (Set.fromFoldable [Tag "foo", Tag "bar"]) handler
+        -- , HH.slot (SProxy :: _ "tagInput") unit TagInput.component (Set.fromFoldable (F.getInput proxies.tagList form)) handler
         , Field.submit $ if isJust mbArticle then "Commit changes" else "Publish"
         ]
       ]
